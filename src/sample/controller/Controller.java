@@ -31,7 +31,7 @@ public class Controller {
         }*/
     }
 
-    /*public Controller(String fileName) {
+    public Controller(String fileName) {
         try ( ObjectInputStream objIStrm = new ObjectInputStream(new FileInputStream(fileName)) )
         {
             paigesRoom2 = (Classroom)objIStrm.readObject();
@@ -42,7 +42,7 @@ public class Controller {
             paigesRoom2.printPriorJobs();
             paigesRoom2.assignNewJobs();
             paigesRoom2.printJobs();
-    }*/
+    }
 
 
     public void manuallyAddPriorJobs() {

@@ -29,7 +29,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
 
-        initiateJobs.put("Teacher's Assistant", 1);
+/*        initiateJobs.put("Teacher's Assistant", 1);
         initiateJobs.put("Trash and Recycling", 1);
         initiateJobs.put("Pencils", 2);
         initiateJobs.put("Custodian", 1);
@@ -44,8 +44,8 @@ public class Main extends Application {
         initiateJobs.put("Lost and Found", 1);
         sample = new Controller("Paige's Room", new String[]{"Matthew", "Claire", "Lydia", "Ryan", "Tobias",
                 "Ellory", "Andre", "Roe", "Cam", "Sulley", "Maddie",
-                "Kendall", "Kelsey", "Mollie", "Max", "Maia"}, initiateJobs);
-//        Controller sample = new Controller("Paige's Room");
+                "Kendall", "Kelsey", "Mollie", "Max", "Maia"}, initiateJobs);*/
+        Controller sample = new Controller("Paige's Room");
 
 //        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         FlowPane landingScreen = new FlowPane(10, 10);

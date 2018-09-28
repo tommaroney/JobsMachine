@@ -1,19 +1,14 @@
 package sample.model;
 
-import sample.model.Job;
-
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class Student implements Serializable {
     private String mStudentName;
     private Job mCurrentJob;
     private Job mPreviousJob;
     private Job mTentativeJob;
-    private List<Job> mJobsDoneThisRotation = new ArrayList<>();
+    private Map<Job, Integer> mJobsDoneThisRotation = new HashMap<>(); // stores Job reference and a count of how many times a student has held the job this rotation
 
     Student(String studentName) {
         mStudentName = studentName;
@@ -48,23 +43,25 @@ public class Student implements Serializable {
         mPreviousJob = previousJob;
     }
 
-    public boolean checkAgainstJobsDoneThisRotation(Job j) {  // if student has already done job this rotation method returns true
+    public boolean checkAgainstJobsDoneThisRotation(Job j) {  // if student has already done job this method returns true
         if(mJobsDoneThisRotation == null) return false;
-//        else if(mJobsDoneThisRotation.indexOf(j) != mJobsDoneThisRotation.lastIndexOf(j) && j.getNumberOfStudentsRequired() == 2)
-//            return mJobsDoneThisRotation.contains(j);
-        else return(mJobsDoneThisRotation.contains(j)); // && j.getNumberOfStudentsRequired() == 1);
+        else return(!(mJobsDoneThisRotation.get(j) < j.getNumberOfStudentsRequired()));
     }
 
     public void addJobDoneThisRotation(Job j) {
-        mJobsDoneThisRotation.add(j);
+        mJobsDoneThisRotation.replace(j, mJobsDoneThisRotation.get(j) + 1); // increment value associated with Job
     }
 
     public List<Job> getJobsDoneThisRotation() {
-        return mJobsDoneThisRotation;
+        List<Job> results = new ArrayList<>();
+        for(Job j : mJobsDoneThisRotation.keySet())
+            if(mJobsDoneThisRotation.get(j) == j.getNumberOfStudentsRequired())
+                results.add(j);
+        return results;
     }
 
-    public void addMultipleJobsDoneThisRotation(Collection<Job> j) {
-        mJobsDoneThisRotation.addAll(j);
+    public void addMultipleJobsDoneThisRotation(Map<Job, Integer> j) {
+        mJobsDoneThisRotation.putAll(j);
     }
 
     public Job getTentativeJob() {
@@ -85,6 +82,15 @@ public class Student implements Serializable {
     }
 
     public void clearJobsDoneThisRotation() {
-        mJobsDoneThisRotation.clear();
+        for(Job j : mJobsDoneThisRotation.keySet())
+            mJobsDoneThisRotation.replace(j, 0);
+    }
+
+    public boolean hasStudentDoneEveryJob() {
+        for(Job j : mJobsDoneThisRotation.keySet()) {
+            if(j.getNumberOfStudentsRequired() == mJobsDoneThisRotation.get(j))
+                return true;
+        }
+        return false;
     }
 }

@@ -1,6 +1,7 @@
 package sample.model;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,9 +11,11 @@ import java.util.Random;
 
 public class Classroom implements Serializable {
 
+    private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
     private String mClassroomName;
     private List<Job> unassignedJobs = new ArrayList<>();
-    private List<Student> mRoster = new ArrayList<Student>();
+    private List<Student> mRoster = new ArrayList<>();
     private List<Job> mClassroomJobs = new ArrayList<>();
 
     public Classroom(String ClassroomName, String[] students, HashMap<String, Integer> initiater) {
@@ -43,7 +46,7 @@ public class Classroom implements Serializable {
 
     public static Job findJob(String job, List<Job> classroomJobs) {
         for (Job j : classroomJobs) {
-            if (j.equals(job)) return j;
+            if (j.toString().equals(job)) return j;
         }
         return null;
     }
@@ -70,9 +73,12 @@ public class Classroom implements Serializable {
         return bruteForceJobAssignments(0);
     }
 
+
+    // this method takes what may be an inefficient approach to finding a job meeting qualifications
+    // (i.e. only having been assigned job once until all jobs have been done)
     private boolean bruteForceJobAssignments(int stuVar) {
         List<Job> qualifiedJobs = mRoster.get(stuVar).getQualifiedJobs(unassignedJobs);  // get list of jobs student has not been assigned.
-        boolean result = false;
+        boolean result;
         do {
             if (qualifiedJobs.size() == 0) return false;  // avoid exception on random int generator
             int j = new Random().nextInt(qualifiedJobs.size());  // get random int
@@ -80,7 +86,7 @@ public class Classroom implements Serializable {
             if (stuVar < mRoster.size() - 1) { // confirm student is not last in list
                 unassignedJobs.remove(mRoster.get(stuVar).getTentativeJob());
                 result = bruteForceJobAssignments(stuVar + 1);  // call and store result of call to bruteForceJobAssignment
-                if (result == false) {
+                if (!result) {
                     qualifiedJobs.remove(qualifiedJobs.get(j));  // remove impossible job path root if next student has no qualified job assignments.
                     unassignedJobs.add(mRoster.get(stuVar).getTentativeJob());
                 }
@@ -90,29 +96,6 @@ public class Classroom implements Serializable {
         mRoster.get(stuVar).setCurrentJob(mRoster.get(stuVar).getTentativeJob());
         return true;
     }
-
-
-        // TODO: Fix job assignment algorithm to avoid impossible job assignments.
-        // Try a recursive method.
- /*       try {
-                for (Student stu : getRoster()) {
-                    List<Job> qualifiedJobs = stu.getQualifiedJobs(unassignedJobs);
-                    int i = new Random().nextInt(qualifiedJobs.size());
-                    stu.setTentativeJob(qualifiedJobs.get(i));
-                    unassignedJobs.remove(qualifiedJobs.get(i));
-                    qualifiedJobs.get(i).decrementNumberOfStudentsStillNeeded();
-                }
-        } catch(NullPointerException npe) {
-            for(Student stu : mRoster)
-                stu.setTentativeJob(null);
-            assignNewJobs();
-        }
-        for(Student stu : mRoster) {
-            stu.setCurrentJob(stu.getTentativeJob());
-            stu.addJobDoneThisRotation(stu.getTentativeJob());
-            stu.setTentativeJob(null);
-        }
-    }*/
 
     public void printJobs() {
         for(Student stu : mRoster)
@@ -135,15 +118,48 @@ public class Classroom implements Serializable {
 
     public void restartCycleIfCycleComplete() {
         for(Student s : mRoster)
-            if(s.getJobsDoneThisRotation().containsAll(mClassroomJobs))
+            if(s.hasStudentDoneEveryJob())
                 for(Student t : mRoster) {
                     s.clearJobsDoneThisRotation();
                 }
     }
-public void forceRestartCycle() {
+
+    public void forceRestartCycle() {
         for(Student s : mRoster)
             for(Student t : mRoster) {
                 s.clearJobsDoneThisRotation();
             }
+    }
+
+    public void manuallyAddPriorJobs() {
+        System.out.println("How many jobs have students already been assigned?  ");
+        int numberOfWeeksPassed = 0;
+        try {
+            numberOfWeeksPassed = Integer.valueOf(reader.readLine()); //have reader enter number of jobs they need to add
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for(Student stu : mRoster) {
+            for(int i = 0; i < numberOfWeeksPassed; i++) {
+                Job j = null;
+                do {
+                    System.out.printf("What job did %s have week %d?  ", stu, i + 1);
+                    try {
+                        j = findJob(reader.readLine(), mClassroomJobs);
+                        if(stu.checkAgainstJobsDoneThisRotation(j)) {
+                            System.out.println("Would you like to change your answer? That job was already " +
+                                    "assigned to this student. Y or N: ");
+                            if (reader.readLine().equals("Y")) {
+                                j = null;
+                                System.out.println("Please try again");
+                            }
+                        }
+                    } catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }while(j == null);
+                stu.addJobDoneThisRotation(j);
+            }
+        }
     }
 }
